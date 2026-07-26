@@ -467,7 +467,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* =====================================================
-       11. CONTACT FORM
+       11. CONTACT FORM - FORMSPREE
     ===================================================== */
 
     const contactForm =
@@ -477,110 +477,87 @@ document.addEventListener("DOMContentLoaded", function () {
 
         contactForm.addEventListener(
             "submit",
-            function (event) {
+            async function (event) {
 
                 event.preventDefault();
 
-                const name =
-                    contactForm.querySelector("#name");
 
-                const email =
-                    contactForm.querySelector("#email");
-
-                const subject =
-                    contactForm.querySelector("#subject");
-
-                const message =
-                    contactForm.querySelector("#message");
-
-
-                if (
-                    !name ||
-                    !email ||
-                    !subject ||
-                    !message
-                ) {
-
-                    alert(
-                        "Please check your form fields."
+                const submitButton =
+                    contactForm.querySelector(
+                        'button[type="submit"]'
                     );
 
-                    return;
+
+                const originalButtonText =
+                    submitButton.innerHTML;
+
+
+                // Button ko Sending par change karna
+                submitButton.innerHTML =
+                    'Sending... <i class="fa-solid fa-spinner fa-spin"></i>';
+
+                submitButton.disabled = true;
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            "https://formspree.io/f/mkodpdbj",
+                            {
+
+                                method: "POST",
+
+                                body: new FormData(
+                                    contactForm
+                                ),
+
+                                headers: {
+
+                                    "Accept":
+                                        "application/json"
+
+                                }
+
+                            }
+                        );
+
+
+                    if (response.ok) {
+
+                        alert(
+                            "Thank you! Your message has been sent successfully."
+                        );
+
+
+                        // Form clear karna
+                        contactForm.reset();
+
+
+                    } else {
+
+                        alert(
+                            "Oops! Something went wrong. Please try again."
+                        );
+
+                    }
+
+
+                } catch (error) {
+
+                    alert(
+                        "There was a problem sending your message."
+                    );
 
                 }
 
 
-                if (
+                // Button ko normal karna
+                submitButton.innerHTML =
+                    originalButtonText;
 
-                    name.value.trim() === "" ||
-                    email.value.trim() === "" ||
-                    subject.value.trim() === "" ||
-                    message.value.trim() === ""
+                submitButton.disabled = false;
 
-                ) {
-
-                    alert(
-                        "Please fill in all fields."
-                    );
-
-                    return;
-
-                }
-
-
-                /*
-                   Email Address
-                */
-
-                const myEmail =
-                    "mohammadhassan3995@gmail.com";
-
-
-                /*
-                   Create Email Body
-                */
-
-                const emailBody =
-
-                    "Name: " +
-                    name.value.trim() +
-
-                    "\n\nEmail: " +
-                    email.value.trim() +
-
-                    "\n\nMessage:\n" +
-                    message.value.trim();
-
-
-                /*
-                   Open User's Email App
-                */
-
-                const mailtoLink =
-
-                    "mailto:" +
-                    myEmail +
-
-                    "?subject=" +
-                    encodeURIComponent(
-                        subject.value.trim()
-                    ) +
-
-                    "&body=" +
-                    encodeURIComponent(
-                        emailBody
-                    );
-
-
-                window.location.href =
-                    mailtoLink;
-
-
-                /*
-                   Reset Form
-                */
-
-                contactForm.reset();
 
             }
 
@@ -642,11 +619,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* =====================================================
-       13. CONSOLE MESSAGE
+       13. CURRENT YEAR
+    ===================================================== */
+
+    const currentYear =
+        document.getElementById("current-year");
+
+    if (currentYear) {
+
+        currentYear.textContent =
+            new Date().getFullYear();
+
+    }
+
+
+    /* =====================================================
+       14. CONSOLE MESSAGE
     ===================================================== */
 
     console.log(
         "Hassan's Portfolio is working successfully!"
     );
+
 
 });
