@@ -611,8 +611,11 @@ img {
     border-radius: 10px;
 }
 
+/* Skill bar initially empty */
+
 .skill-progress {
     display: block;
+    width: 0;
     height: 100%;
     background: linear-gradient(
         90deg,
@@ -620,23 +623,30 @@ img {
         var(--primary-light)
     );
     border-radius: 10px;
+
+    transition: width 1.5s ease-in-out;
 }
 
-.html-progress {
+/* When skills section becomes visible */
+
+.skills.show-skills .html-progress {
     width: 100%;
 }
 
-.css-progress {
+.skills.show-skills .css-progress {
     width: 90%;
 }
 
-.js-progress {
+.skills.show-skills .js-progress {
     width: 75%;
 }
 
-.bootstrap-progress {
+.skills.show-skills .bootstrap-progress {
     width: 80%;
 }
+
+
+/* Tools */
 
 .tools-grid {
     display: grid;
