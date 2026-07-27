@@ -643,3 +643,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 });
+
+/* =========================
+   SKILLS BAR ANIMATION
+========================= */
+
+const skillsSection = document.querySelector(".skills");
+
+const skillsObserver = new IntersectionObserver(
+    function (entries) {
+
+        entries.forEach(function (entry) {
+
+            if (entry.isIntersecting) {
+
+                skillsSection.classList.add("show-skills");
+
+                skillsObserver.unobserve(skillsSection);
+
+            }
+
+        });
+
+    },
+    {
+        threshold: 0.3
+    }
+);
+
+if (skillsSection) {
+
+    skillsObserver.observe(skillsSection);
+
+}
