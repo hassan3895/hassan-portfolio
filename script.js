@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         window.addEventListener("load", function () {
 
-            preloader.style.opacity = "0";
+            preloader.classList.add("loaded");
 
             setTimeout(function () {
                 preloader.style.display = "none";
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* =====================================================
-       3. HEADER SCROLL EFFECT
+       3. HEADER SCROLL EFFECT (STICKY NAVBAR)
     ===================================================== */
 
     const header = document.querySelector(".header");
@@ -160,7 +160,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const words = [
             "Web Developer",
             "Frontend Developer",
-            "UI Designer",
+            "AI Virtual Assistant",
+            "Shopify Assistant",
             "Freelancer"
         ];
 
@@ -265,7 +266,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* =====================================================
-       7. PROJECT FILTER
+       7. PROJECT FILTER (WITH FADE ANIMATION)
     ===================================================== */
 
     const filterButtons =
@@ -294,16 +295,35 @@ document.addEventListener("DOMContentLoaded", function () {
                 const category =
                     card.getAttribute("data-category");
 
-                if (
-                    filter === "all" ||
-                    filter === category
-                ) {
+                const matches =
+                    filter === "all" || filter === category;
 
-                    card.style.display = "";
+                if (matches) {
+
+                    card.classList.remove("hide-project");
+                    card.style.opacity = "0";
+                    card.style.transform = "translateY(20px)";
+
+                    requestAnimationFrame(function () {
+
+                        card.style.transition =
+                            "opacity 0.5s ease, transform 0.5s ease";
+
+                        card.style.opacity = "1";
+                        card.style.transform = "translateY(0)";
+
+                    });
 
                 } else {
 
-                    card.style.display = "none";
+                    card.style.opacity = "0";
+                    card.style.transform = "translateY(20px)";
+
+                    setTimeout(function () {
+
+                        card.classList.add("hide-project");
+
+                    }, 400);
 
                 }
 
@@ -315,61 +335,180 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* =====================================================
-       8. SKILL BAR ANIMATION
+       8. SKILL BAR ANIMATION (ANIMATE ONLY WHEN VISIBLE)
+       Works reliably on laptop, desktop, tablet and mobile:
+       each bar is observed individually instead of the whole
+       section, so it still triggers even on small/tall screens
+       where the full skills section never fits the old 30%
+       visibility threshold.
     ===================================================== */
 
-    const skillSection =
-        document.querySelector(".skills");
+    function runSkillBarWidth(bar) {
 
-    const skillProgress =
+        const targetWidth =
+            bar.getAttribute("data-width") || "0";
+
+        bar.style.width = targetWidth + "%";
+
+    }
+
+    const skillBars =
         document.querySelectorAll(".skill-progress");
 
-    let skillsAnimated = false;
+    if (skillBars.length) {
 
-    function animateSkills() {
+        if ("IntersectionObserver" in window) {
 
-        if (!skillSection || skillsAnimated) {
-            return;
-        }
+            const skillBarObserver = new IntersectionObserver(
+                function (entries, observer) {
 
-        const sectionTop =
-            skillSection.getBoundingClientRect().top;
+                    entries.forEach(function (entry) {
 
-        const screenPosition =
-            window.innerHeight * 0.8;
+                        if (entry.isIntersecting) {
 
-        if (sectionTop < screenPosition) {
+                            runSkillBarWidth(entry.target);
+                            observer.unobserve(entry.target);
 
-            skillProgress.forEach(function (progress) {
+                        }
 
-                progress.style.transition =
-                    "width 1.5s ease";
+                    });
+
+                },
+                {
+                    threshold: 0.15,
+                    rootMargin: "0px 0px -10% 0px"
+                }
+            );
+
+            skillBars.forEach(function (bar) {
+
+                skillBarObserver.observe(bar);
 
             });
 
-            skillsAnimated = true;
+            // Safety net: on some mobile browsers the observer can
+            // miss bars that are already on-screen at load time
+            // (e.g. short viewport, zoomed pages). Do one manual
+            // check right after load as a backup.
+            window.addEventListener("load", function () {
+
+                skillBars.forEach(function (bar) {
+
+                    const rect = bar.getBoundingClientRect();
+
+                    const isVisible =
+                        rect.top < window.innerHeight &&
+                        rect.bottom > 0;
+
+                    if (isVisible) {
+
+                        runSkillBarWidth(bar);
+
+                    }
+
+                });
+
+            });
+
+        } else {
+
+            // Fallback for very old browsers without IntersectionObserver
+            skillBars.forEach(runSkillBarWidth);
 
         }
 
     }
 
-    window.addEventListener("scroll", animateSkills);
 
-    animateSkills();
+    /* =====================================================
+       9. COUNTER ANIMATION (ACHIEVEMENTS / STATS)
+    ===================================================== */
+
+    const counters = document.querySelectorAll(".counter");
+
+    function animateCounter(counter) {
+
+        const target =
+            parseInt(counter.getAttribute("data-target"), 10) || 0;
+
+        const duration = 1500;
+        const frameRate = 16;
+        const totalFrames = Math.round(duration / frameRate);
+
+        let frame = 0;
+
+        const countUp = setInterval(function () {
+
+            frame++;
+
+            const progress = frame / totalFrames;
+
+            const currentValue =
+                Math.round(target * Math.min(progress, 1));
+
+            counter.textContent = currentValue;
+
+            if (progress >= 1) {
+
+                counter.textContent = target;
+                clearInterval(countUp);
+
+            }
+
+        }, frameRate);
+
+    }
+
+    if (counters.length && "IntersectionObserver" in window) {
+
+        const counterObserver = new IntersectionObserver(
+            function (entries, observer) {
+
+                entries.forEach(function (entry) {
+
+                    if (entry.isIntersecting) {
+
+                        animateCounter(entry.target);
+                        observer.unobserve(entry.target);
+
+                    }
+
+                });
+
+            },
+            { threshold: 0.5 }
+        );
+
+        counters.forEach(function (counter) {
+
+            counterObserver.observe(counter);
+
+        });
+
+    } else {
+
+        counters.forEach(animateCounter);
+
+    }
 
 
     /* =====================================================
-       9. SCROLL REVEAL ANIMATION
+       10. SCROLL REVEAL ANIMATION
     ===================================================== */
 
     const revealElements = document.querySelectorAll(
         ".section-heading, " +
-        ".about-card, " +
+        ".about-visual, " +
         ".about-content, " +
+        ".timeline-item, " +
+        ".certificate-card, " +
+        ".experience-card, " +
         ".skill-item, " +
         ".tool-card, " +
+        ".soft-skill-card, " +
         ".project-card, " +
         ".service-card, " +
+        ".achievement-card, " +
         ".contact-info, " +
         ".contact-form"
     );
@@ -381,13 +520,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 function (entries, observer) {
 
-                    entries.forEach(function (entry) {
+                    entries.forEach(function (entry, index) {
 
                         if (entry.isIntersecting) {
 
-                            entry.target.classList.add(
-                                "show-element"
-                            );
+                            // Small stagger for grouped cards
+                            setTimeout(function () {
+
+                                entry.target.classList.add(
+                                    "show-element"
+                                );
+
+                            }, (index % 4) * 90);
 
                             observer.unobserve(
                                 entry.target
@@ -400,7 +544,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
 
                 {
-                    threshold: 0.15
+                    threshold: 0.12
                 }
 
             );
@@ -423,7 +567,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* =====================================================
-       10. SCROLL TO TOP BUTTON
+       11. SCROLL TO TOP BUTTON
     ===================================================== */
 
     const scrollTopButton =
@@ -467,13 +611,151 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* =====================================================
-       11. CONTACT FORM - FORMSPREE
+       12. CONTACT FORM - VALIDATION + FORMSPREE
     ===================================================== */
 
     const contactForm =
         document.querySelector(".contact-form");
 
+    function showFieldError(input, errorId, message) {
+
+        const errorEl = document.getElementById(errorId);
+
+        if (errorEl) {
+            errorEl.textContent = message;
+        }
+
+        if (input) {
+            input.classList.add("input-error");
+        }
+
+    }
+
+    function clearFieldError(input, errorId) {
+
+        const errorEl = document.getElementById(errorId);
+
+        if (errorEl) {
+            errorEl.textContent = "";
+        }
+
+        if (input) {
+            input.classList.remove("input-error");
+        }
+
+    }
+
+    function validateContactForm() {
+
+        let isValid = true;
+
+        const nameInput = document.getElementById("name");
+        const emailInput = document.getElementById("email");
+        const phoneInput = document.getElementById("phone");
+        const subjectInput = document.getElementById("subject");
+        const messageInput = document.getElementById("message");
+
+        // Name
+        if (!nameInput.value.trim()) {
+
+            showFieldError(nameInput, "name-error", "Please enter your name.");
+            isValid = false;
+
+        } else {
+
+            clearFieldError(nameInput, "name-error");
+
+        }
+
+        // Email
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailInput.value.trim()) {
+
+            showFieldError(emailInput, "email-error", "Please enter your email.");
+            isValid = false;
+
+        } else if (!emailPattern.test(emailInput.value.trim())) {
+
+            showFieldError(emailInput, "email-error", "Please enter a valid email address.");
+            isValid = false;
+
+        } else {
+
+            clearFieldError(emailInput, "email-error");
+
+        }
+
+        // Phone
+        const phonePattern = /^[0-9+\-\s()]{7,}$/;
+
+        if (!phoneInput.value.trim()) {
+
+            showFieldError(phoneInput, "phone-error", "Please enter your phone number.");
+            isValid = false;
+
+        } else if (!phonePattern.test(phoneInput.value.trim())) {
+
+            showFieldError(phoneInput, "phone-error", "Please enter a valid phone number.");
+            isValid = false;
+
+        } else {
+
+            clearFieldError(phoneInput, "phone-error");
+
+        }
+
+        // Subject
+        if (!subjectInput.value.trim()) {
+
+            showFieldError(subjectInput, "subject-error", "Please enter a subject.");
+            isValid = false;
+
+        } else {
+
+            clearFieldError(subjectInput, "subject-error");
+
+        }
+
+        // Message
+        if (!messageInput.value.trim()) {
+
+            showFieldError(messageInput, "message-error", "Please write a message.");
+            isValid = false;
+
+        } else if (messageInput.value.trim().length < 10) {
+
+            showFieldError(messageInput, "message-error", "Message should be at least 10 characters.");
+            isValid = false;
+
+        } else {
+
+            clearFieldError(messageInput, "message-error");
+
+        }
+
+        return isValid;
+
+    }
+
     if (contactForm) {
+
+        // Clear individual field errors as the user types
+        ["name", "email", "phone", "subject", "message"].forEach(function (fieldId) {
+
+            const field = document.getElementById(fieldId);
+
+            if (field) {
+
+                field.addEventListener("input", function () {
+
+                    clearFieldError(field, fieldId + "-error");
+
+                });
+
+            }
+
+        });
 
         contactForm.addEventListener(
             "submit",
@@ -481,23 +763,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 event.preventDefault();
 
+                if (!validateContactForm()) {
+                    return;
+                }
 
                 const submitButton =
                     contactForm.querySelector(
                         'button[type="submit"]'
                     );
 
-
                 const originalButtonText =
                     submitButton.innerHTML;
-
 
                 // Button ko Sending par change karna
                 submitButton.innerHTML =
                     'Sending... <i class="fa-solid fa-spinner fa-spin"></i>';
 
                 submitButton.disabled = true;
-
 
                 try {
 
@@ -522,17 +804,14 @@ document.addEventListener("DOMContentLoaded", function () {
                             }
                         );
 
-
                     if (response.ok) {
 
                         alert(
                             "Thank you! Your message has been sent successfully."
                         );
 
-
                         // Form clear karna
                         contactForm.reset();
-
 
                     } else {
 
@@ -542,7 +821,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     }
 
-
                 } catch (error) {
 
                     alert(
@@ -551,13 +829,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 }
 
-
                 // Button ko normal karna
                 submitButton.innerHTML =
                     originalButtonText;
 
                 submitButton.disabled = false;
-
 
             }
 
@@ -567,7 +843,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* =====================================================
-       12. SMOOTH SCROLL
+       13. SMOOTH SCROLL
     ===================================================== */
 
     const anchorLinks =
@@ -619,7 +895,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* =====================================================
-       13. CURRENT YEAR
+       14. CURRENT YEAR
     ===================================================== */
 
     const currentYear =
@@ -634,7 +910,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* =====================================================
-       14. CONSOLE MESSAGE
+       15. CONSOLE MESSAGE
     ===================================================== */
 
     console.log(
@@ -643,36 +919,3 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 });
-
-/* =========================
-   SKILLS BAR ANIMATION
-========================= */
-
-const skillsSection = document.querySelector(".skills");
-
-const skillsObserver = new IntersectionObserver(
-    function (entries) {
-
-        entries.forEach(function (entry) {
-
-            if (entry.isIntersecting) {
-
-                skillsSection.classList.add("show-skills");
-
-                skillsObserver.unobserve(skillsSection);
-
-            }
-
-        });
-
-    },
-    {
-        threshold: 0.3
-    }
-);
-
-if (skillsSection) {
-
-    skillsObserver.observe(skillsSection);
-
-}
