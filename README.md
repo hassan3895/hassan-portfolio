@@ -1,4 +1,4 @@
-<img width="1562" height="784" alt="alnasirsons" src="https://github.com/user-attachments/assets/0046fc85-d77b-4d60-8f44-a8dce44b2b88" />
+<img width="1898" height="904" alt="HASSAN TEXTILE" src="https://github.com/user-attachments/assets/c6d9d497-3c1c-4433-aebf-d4d2b9922efa" />
 
 <img width="900" height="457" alt="genz-sellers" src="https://github.com/user-attachments/assets/5235a3fa-dadc-46a3-9e9a-4152140723d8" />
 
