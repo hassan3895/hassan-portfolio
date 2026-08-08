@@ -918,4 +918,47 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
 
+    /* =====================================================
+       16. DOWNLOAD CV LINK HANDLER
+
+       This script intercepts clicks on the "Download CV" link
+       and forces a download of the CV file that lives in the
+       repository. It uses the raw.githubusercontent.com URL so
+       the browser can download the file directly.
+    ===================================================== */
+
+    try {
+        // Find likely download link by href or link text
+        const links = Array.from(document.querySelectorAll('a'));
+
+        links.forEach(function (a) {
+            const href = a.getAttribute('href') || '';
+            const text = (a.textContent || '').trim();
+
+            if (href.includes('Hassan-CV.pdf.pdf') || /^Download CV/i.test(text)) {
+                a.addEventListener('click', function (e) {
+                    // Prevent default navigation
+                    e.preventDefault();
+
+                    // Raw file URL for the repository (adjust owner/repo/branch if needed)
+                    const rawUrl = 'https://raw.githubusercontent.com/hassan3895/hassan-portfolio/main/Hassan-CV.pdf.pdf';
+
+                    // Create temporary anchor to trigger download
+                    const tmp = document.createElement('a');
+                    tmp.href = rawUrl;
+                    tmp.setAttribute('download', 'Hassan-CV.pdf');
+                    // For some browsers, setting target helps
+                    tmp.target = '_blank';
+
+                    document.body.appendChild(tmp);
+                    tmp.click();
+                    tmp.remove();
+                });
+            }
+        });
+    } catch (err) {
+        // Fail silently - this feature is non-critical
+        console.warn('Download CV handler failed', err);
+    }
+
 });
